@@ -1,7 +1,5 @@
 package com.papajohns.cleanup;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,9 +8,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-public class Controller {
+import org.apache.log4j.Logger;
 
-    private static final int QUEUE_SIZE = 2;
+public class Controller {
+	
+	private static Logger log = Logger.getLogger(Controller.class.getName());
+
+    private static final int QUEUE_SIZE = 10;
     private static BlockingQueue<String> queue;
     private static Collection<Thread> producerThreadCollection;
     private static Collection<Thread> allThreadCollection;
@@ -36,13 +38,13 @@ public class Controller {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                System.out.println(e);
+            	log.error(e.getMessage(), e);
             }
         }
-        System.out.println("Controller finished");
+        log.debug("Controller finished");
         long endTime = System.nanoTime();
         long elapsedTimeInMillis = TimeUnit.MILLISECONDS.convert((endTime - startTime), TimeUnit.NANOSECONDS);
-        System.out.println("Total elapsed time: " + elapsedTimeInMillis + " ms");
+        log.debug("Total elapsed time: " + elapsedTimeInMillis + " ms");
     }
 
     private static void createAndStartProducers(String codePath, int threadCount){

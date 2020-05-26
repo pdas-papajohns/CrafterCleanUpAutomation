@@ -6,7 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.log4j.Logger;
+
 public class Producer implements Runnable{
+	
+	private static Logger log = Logger.getLogger(Producer.class.getName());
 
     private Path fileToRead;
     private BlockingQueue<String> queue;
@@ -24,17 +28,15 @@ public class Producer implements Runnable{
             while((line = reader.readLine()) != null){
                 try {
                     queue.put(line);
-                    System.out.println(Thread.currentThread().getName() + " added \"" + line + "\" to queue, queue size: " + queue.size());             
+                    log.debug(Thread.currentThread().getName() + " added \"" + line + "\" to queue, queue size: " + queue.size());
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
 
-            System.out.println(Thread.currentThread().getName()+" finished");
+            log.debug(Thread.currentThread().getName()+" finished");
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	 log.error(e.getMessage(), e);
         }
     }
 

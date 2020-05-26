@@ -15,12 +15,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -29,6 +30,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -36,6 +38,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class SearchUtils {
+	
+	private static Logger log = Logger.getLogger(SearchUtils.class.getName());
 	
 	private SearchUtils() {
 		//private constructor
@@ -60,7 +64,10 @@ public class SearchUtils {
 				} else {
 					Scanner scanner = new Scanner(currentFile);
 					if (scanner.findWithinHorizon(pattern, 0) != null) {
-						result.add(currentFile.getPath());
+						String currentPath = currentFile.getPath();
+						if(!(containsIngnoreCase(currentPath, pattern) && !endsWithIngnoreCase(currentPath, (pattern + ".xml")))) {
+							result.add(currentPath);
+						}
 					}
 					scanner.close();
 				}
@@ -75,9 +82,14 @@ public class SearchUtils {
 		int counter = 0;
 		while (input.hasNextLine()) {
 			String line = input.nextLine();
-			if (line.contains(code)) {
-				final String[] lineFromFile = line.split(code);
-				counter += lineFromFile.length - 1;
+//			if (containsIngnoreCase(line, code)) {
+//				final String[] lineFromFile = line.toUpperCase().split(code.toUpperCase());
+//				counter += lineFromFile.length - 1;
+//			}
+			Pattern p = Pattern.compile(code);
+			Matcher m = p.matcher(line);
+			while (m.find()) {
+				counter++;
 			}
 		}
 		input.close();
@@ -133,14 +145,14 @@ public class SearchUtils {
 				scanner.nextLine();
 				count++;
 			}
-			System.out.println("Lines in the file: " + count); // Displays no. of lines in the input file.
+			log.debug("Lines in the file: " + count);// Displays no. of lines in the input file.
 
 			double temp = (count / noOfFiles);
 			int temp1 = (int) temp;
 			int noOfLines = 0;
 			noOfLines = temp1;
 			int codeLeft = (int) (count - (noOfFiles * noOfLines));
-			System.out.println("No. of files to be generated :" + noOfFiles); // no. of lines in each files.
+			log.debug("No. of files to be generated :" + noOfFiles); // no. of lines in each files.
 
 // ---------------------------------------------------------------------------------------------------------
 
@@ -153,7 +165,7 @@ public class SearchUtils {
 				String strLine;
 
 				filePath = file.getParent() + "\\Split_Files";
-				System.out.println("Directory ::" + filePath);
+				log.debug("Directory ::" + filePath);
 				File newFile = new File(filePath);
 				if (newFile.exists()) {
 					Files.walk(Paths.get(filePath)).filter(Files::isRegularFile).map(Path::toFile)
@@ -188,7 +200,7 @@ public class SearchUtils {
 				scanner.close();
 			}
 		} catch (Exception e) {
-			System.err.println("Error: " + e.getMessage());
+			 log.error(e.getMessage(), e);
 		}
 		return filePath;
 	}
@@ -202,6 +214,47 @@ public class SearchUtils {
 		return transformer;
 
 		
+	}
+	
+	public static boolean containsIngnoreCase(String source, String pattern) {
+		if (source == null || pattern == null) {
+	          return (source == null && pattern == null);
+	      }
+	      if (pattern.length() > source.length()) {
+	          return false;
+	      }
+		
+		return Pattern.compile(Pattern.quote(pattern), Pattern.CASE_INSENSITIVE).matcher(source).find();
+		
+	}
+	public static boolean endsWithIngnoreCase(String str, String suffix) {
+	      if (str == null || suffix == null) {
+	          return (str == null && suffix == null);
+	      }
+	      if (suffix.length() > str.length()) {
+	          return false;
+	      }
+	      int strOffset = str.length() - suffix.length();
+	      return str.regionMatches(true, strOffset, suffix, 0, suffix.length());
+	  }
+	
+	public static boolean verifyCodeEntry(String file, String code)
+			throws ParserConfigurationException, SAXException, IOException, TransformerException {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		Document dom = db.parse(file);
+		Element docEle = dom.getDocumentElement();
+		NodeList nlInternalName = docEle.getElementsByTagName("internal-name");
+		if (nlInternalName != null && nlInternalName.item(0) != null && nlInternalName.item(0).getNodeType() == Node.ELEMENT_NODE) {
+			Element elInternalName = (Element) nlInternalName.item(0);
+			String value = elInternalName.getTextContent();
+			if (value.equals(code)) {
+				return true;
+			}
+		}
+
+		return false;
+
 	}
 
 }
