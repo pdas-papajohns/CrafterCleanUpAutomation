@@ -1,1 +1,1 @@
-java -jar CrafterUpdateContent-0.0.1-SNAPSHOT.jar C:\\Users\\208732\\Desktop\\ImpDoc\\DigitalEngineering\\Crafter\\code1.csv C:\\Users\\208732\\Desktop\\ImpDoc\\DigitalEngineering\\Crafter\\ShellScript\\components\\item 1
+java -jar CrafterUpdateContent-0.0.1-SNAPSHOT.jar <<Full path of the csv files containing product code>> <<crafter content location till item>> <<number of threads to be run>>
