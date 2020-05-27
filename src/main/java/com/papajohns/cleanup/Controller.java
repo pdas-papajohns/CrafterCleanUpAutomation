@@ -8,6 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 public class Controller {
@@ -22,6 +23,7 @@ public class Controller {
     
     
     public static void main(String[] args) {
+    	BasicConfigurator.configure();
     	long startTime = System.nanoTime();
         producerThreadCollection = new ArrayList<>();
         allThreadCollection = new ArrayList<>();

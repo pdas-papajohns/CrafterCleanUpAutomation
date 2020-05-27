@@ -62,14 +62,15 @@ public class SearchUtils {
 				if (currentFile.isDirectory()) {
 					searchFiles(currentFile, pattern, result);
 				} else {
-					Scanner scanner = new Scanner(currentFile);
-					if (scanner.findWithinHorizon(pattern, 0) != null) {
-						String currentPath = currentFile.getPath();
-						if(!(containsIngnoreCase(currentPath, pattern) && !endsWithIngnoreCase(currentPath, (pattern + ".xml")))) {
-							result.add(currentPath);
+					try (Scanner scanner = new Scanner(currentFile);) {
+						if (scanner.findWithinHorizon(pattern, 0) != null) {
+							String currentPath = currentFile.getPath();
+							if (!(containsIngnoreCase(currentPath, pattern)
+									&& !endsWithIngnoreCase(currentPath, (pattern + ".xml")))) {
+								result.add(currentPath);
+							}
 						}
 					}
-					scanner.close();
 				}
 			}
 		}
@@ -82,10 +83,6 @@ public class SearchUtils {
 		int counter = 0;
 		while (input.hasNextLine()) {
 			String line = input.nextLine();
-//			if (containsIngnoreCase(line, code)) {
-//				final String[] lineFromFile = line.toUpperCase().split(code.toUpperCase());
-//				counter += lineFromFile.length - 1;
-//			}
 			Pattern p = Pattern.compile(code);
 			Matcher m = p.matcher(line);
 			while (m.find()) {
@@ -135,15 +132,17 @@ public class SearchUtils {
 
 	public static String splitFile(int noOfFiles, String inputfile) {
 		String filePath = "";
+		int count = 0;
 		try {
 
 			File file = new File(inputfile);
 
-			Scanner scanner = new Scanner(file);
-			int count = 0;
-			while (scanner.hasNextLine()) {
-				scanner.nextLine();
-				count++;
+			try (Scanner scanner = new Scanner(file);) {
+				count = 0;
+				while (scanner.hasNextLine()) {
+					scanner.nextLine();
+					count++;
+				}
 			}
 			log.debug("Lines in the file: " + count);// Displays no. of lines in the input file.
 
@@ -151,7 +150,7 @@ public class SearchUtils {
 			int temp1 = (int) temp;
 			int noOfLines = 0;
 			noOfLines = temp1;
-			int codeLeft = (int) (count - (noOfFiles * noOfLines));
+			int codeLeft = count - (noOfFiles * noOfLines);
 			log.debug("No. of files to be generated :" + noOfFiles); // no. of lines in each files.
 
 // ---------------------------------------------------------------------------------------------------------
@@ -176,28 +175,24 @@ public class SearchUtils {
 				filePath = filePath + "\\File";
 				for (int j = 1; j <= noOfFiles; j++) {
 
-					FileWriter outputStream = new FileWriter(filePath + j + ".csv"); // Destination
-					// File
-					// Location
-					BufferedWriter out = new BufferedWriter(outputStream);
-					if (j == noOfFiles && codeLeft != 0) {
-						noOfLines = noOfLines + codeLeft;
-					}
-					for (int i = 1; i <= noOfLines; i++) {
-						strLine = br.readLine();
-						if (strLine != null) {
-							out.write(strLine);
-							if (i != noOfLines) {
-								out.newLine();
+					try (FileWriter outputStream = new FileWriter(filePath + j + ".csv"); // Destination File Location
+							BufferedWriter out = new BufferedWriter(outputStream);) {
+						if (j == noOfFiles && codeLeft != 0) {
+							noOfLines = noOfLines + codeLeft;
+						}
+						for (int i = 1; i <= noOfLines; i++) {
+							strLine = br.readLine();
+							if (strLine != null) {
+								out.write(strLine);
+								if (i != noOfLines) {
+									out.newLine();
+								}
 							}
 						}
 					}
-
-					out.close();
 				}
 
 				in.close();
-				scanner.close();
 			}
 		} catch (Exception e) {
 			 log.error(e.getMessage(), e);
@@ -239,7 +234,7 @@ public class SearchUtils {
 	  }
 	
 	public static boolean verifyCodeEntry(String file, String code)
-			throws ParserConfigurationException, SAXException, IOException, TransformerException {
+			throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		Document dom = db.parse(file);

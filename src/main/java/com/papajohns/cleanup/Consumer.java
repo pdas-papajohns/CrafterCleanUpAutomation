@@ -23,7 +23,7 @@ public class Consumer implements Runnable {
 	public Consumer(BlockingQueue<String> q, String pathStr, List<String> fileName) {
 		queue = q;
 		this.pathStr = pathStr;
-		this.fileName = fileName;
+		//this.fileName = fileName;
 	}
 
 	public void run() {
@@ -51,7 +51,7 @@ public class Consumer implements Runnable {
 											&& SearchUtils.verifyCodeEntry(fileToBeDeleted, code)
 											&& (codeReferenceCount == 1 || codeReferenceCount == 2))) {
 								log.info(code + ":: File to be removed : " + fileToBeDeleted);
-								fileName.add(fileToBeDeleted);
+								//fileName.add(fileToBeDeleted);
 								Files.deleteIfExists(Paths.get(result.get(0)));
 							}
 							
@@ -68,7 +68,14 @@ public class Consumer implements Runnable {
 										&& (codeReferenceCount == 6
 												|| codeReferenceCount == 7)) {
 									log.debug(code + ":: has been used as default item, in file :: " + file);
+								} else if ((!file.contains(code)
+												&& SearchUtils.verifyCodeEntry(file, code)
+												&& (codeReferenceCount == 1 || codeReferenceCount == 2))) {
+									log.info(code + ":: File to be removed : " + file);
+									//fileName.add(file);
+									Files.deleteIfExists(Paths.get(result.get(0)));
 								}
+
 							}
 						}
 					} catch (ParserConfigurationException | SAXException | TransformerException | IOException e) {
