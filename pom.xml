@@ -3,6 +3,12 @@
   <groupId>CrafterUpdateContent</groupId>
   <artifactId>CrafterUpdateContent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
   <dependencies>
   	<dependency>
       <groupId>log4j</groupId>
@@ -11,16 +17,23 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>src</sourceDirectory>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
+			<plugin>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-maven-plugin</artifactId>
+		    <version>2.2.4.RELEASE</version>
+		    <executions>
+		        <execution>
+		            <goals>
+		                <goal>repackage</goal>
+		            </goals>
+		            <configuration>
+		                <mainClass>com.papajohns.cleanup.Controller</mainClass>
+		            </configuration>
+		        </execution>
+		    </executions>
+		</plugin>
     </plugins>
   </build>
 </project>
