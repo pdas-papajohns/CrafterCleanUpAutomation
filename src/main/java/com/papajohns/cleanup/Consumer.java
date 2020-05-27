@@ -73,7 +73,7 @@ public class Consumer implements Runnable {
 												&& (codeReferenceCount == 1 || codeReferenceCount == 2))) {
 									log.info(code + ":: File to be removed : " + file);
 									//fileName.add(file);
-									Files.deleteIfExists(Paths.get(result.get(0)));
+									Files.deleteIfExists(Paths.get(file));
 								}
 
 							}
