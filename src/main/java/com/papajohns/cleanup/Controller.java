@@ -30,10 +30,11 @@ public class Controller {
         queue = new LinkedBlockingDeque<>(QUEUE_SIZE);
 
         
-        int threadCount = Integer.parseInt(args[2]);
-        String filePath = SearchUtils.splitFile(threadCount, args[0]);
+        int threadCount = Integer.parseInt(args[2].trim());
+        String filePath = SearchUtils.splitFile(threadCount, args[0].trim());
+        String contentLocation = args[1].trim();
         createAndStartProducers(filePath, threadCount);
-        createAndStartConsumers(args[1], threadCount);
+        createAndStartConsumers(contentLocation, threadCount);
         
 
         for(Thread t: allThreadCollection){
@@ -46,6 +47,7 @@ public class Controller {
         log.debug("Controller finished");
         long endTime = System.nanoTime();
         long elapsedTimeInMillis = TimeUnit.MILLISECONDS.convert((endTime - startTime), TimeUnit.NANOSECONDS);
+        log.debug("Total code with default product: " + Consumer.getDefCounter());
         log.debug("Total elapsed time: " + elapsedTimeInMillis + " ms");
     }
 
@@ -61,7 +63,7 @@ public class Controller {
 
     private static void createAndStartConsumers(String filePath, int threadCount){
         for(int i = 0; i < threadCount; i++){
-            Thread consumerThread = new Thread(new Consumer(queue, filePath, fileName), "consumer-"+i);
+            Thread consumerThread = new Thread(new Consumer(queue, filePath), "consumer-"+i);
             allThreadCollection.add(consumerThread);
             consumerThread.start();
         }

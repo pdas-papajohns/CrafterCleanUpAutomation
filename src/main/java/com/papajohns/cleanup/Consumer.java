@@ -18,12 +18,15 @@ public class Consumer implements Runnable {
 	
 	private BlockingQueue<String> queue;
 	private String pathStr;
-	private List<String> fileName;
+	private static double defCounter = 0;
 
-	public Consumer(BlockingQueue<String> q, String pathStr, List<String> fileName) {
+	public Consumer(BlockingQueue<String> q, String pathStr) {
 		queue = q;
 		this.pathStr = pathStr;
-		//this.fileName = fileName;
+	}
+	
+	public static Double getDefCounter() {
+		return defCounter;
 	}
 
 	public void run() {
@@ -45,13 +48,11 @@ public class Consumer implements Runnable {
 						if (result.size() == 1) {
 							String fileToBeDeleted = result.get(0);
 							codeReferenceCount = SearchUtils.searchForName(new File(fileToBeDeleted), code);
-							if ((SearchUtils.endsWithIngnoreCase(fileToBeDeleted, code + ".xml")
-									&& codeReferenceCount == 3)
-									|| (!fileToBeDeleted.contains(code)
-											&& SearchUtils.verifyCodeEntry(fileToBeDeleted, code)
-											&& (codeReferenceCount == 1 || codeReferenceCount == 2))) {
+							if ((SearchUtils.endsWithIngnoreCase(fileToBeDeleted, File.separator + code + ".xml") //&& SearchUtils.verifyCodeEntry(fileToBeDeleted, code)&& codeReferenceCount == 3
+									)
+									//|| (!fileToBeDeleted.contains(code) && SearchUtils.verifyCodeEntry(fileToBeDeleted, code) && (codeReferenceCount == 1 || codeReferenceCount == 2))
+									) {
 								log.info(code + ":: File to be removed : " + fileToBeDeleted);
-								//fileName.add(fileToBeDeleted);
 								Files.deleteIfExists(Paths.get(result.get(0)));
 							}
 							
@@ -60,20 +61,24 @@ public class Consumer implements Runnable {
 								log.info(code + ":: file :: " + file);
 								codeReferenceCount = SearchUtils.searchForName(new File(file), code);
 								if (!SearchUtils.containsIngnoreCase(file, code)
-										&& (codeReferenceCount == 3
-												|| codeReferenceCount == 4)) {
-									log.debug(code + ":: block to be deleted in file :: " + file);
-									SearchUtils.parseFile(file, code);
-								} else if (!file.contains(code)
-										&& (codeReferenceCount == 6
-												|| codeReferenceCount == 7)) {
-									log.debug(code + ":: has been used as default item, in file :: " + file);
-								} else if ((!file.contains(code)
-												&& SearchUtils.verifyCodeEntry(file, code)
-												&& (codeReferenceCount == 1 || codeReferenceCount == 2))) {
-									log.info(code + ":: File to be removed : " + file);
-									//fileName.add(file);
-									Files.deleteIfExists(Paths.get(file));
+										//&& (codeReferenceCount == 3 || codeReferenceCount == 4)) {
+										&& SearchUtils.validateProduct(file, code, "products")) {
+									if(!SearchUtils.validateProduct(file, code, "defaultProduct")) {
+										log.debug(code + ":: block to be deleted in file :: " + file);
+										SearchUtils.parseFile(file, code);
+									} else {
+										++defCounter;
+										log.debug(code + ":: has been used as default item, in file :: " + file);
+									}
+//								} else if (!file.contains(code)
+//										&& (codeReferenceCount == 6
+//												|| codeReferenceCount == 7)) {
+//									log.debug(code + ":: has been used as default item, in file :: " + file);
+//								} else if ((!file.contains(code)
+//												&& SearchUtils.verifyCodeEntry(file, code)
+//												&& (codeReferenceCount == 1 || codeReferenceCount == 2))) {
+//									log.info(code + ":: File to be removed : " + file);
+									//Files.deleteIfExists(Paths.get(file));
 								}
 
 							}

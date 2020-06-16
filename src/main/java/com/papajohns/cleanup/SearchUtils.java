@@ -48,7 +48,7 @@ public class SearchUtils {
 			throws FileNotFoundException {
 
 		if (!file.isDirectory()) {
-			throw new IllegalArgumentException("file has to be a directory");
+			throw new IllegalArgumentException("file has to be a directory ->" + file);
 		}
 
 		if (result == null) {
@@ -83,7 +83,7 @@ public class SearchUtils {
 		int counter = 0;
 		while (input.hasNextLine()) {
 			String line = input.nextLine();
-			Pattern p = Pattern.compile(code);
+			Pattern p = Pattern.compile(code, Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(line);
 			while (m.find()) {
 				counter++;
@@ -163,8 +163,9 @@ public class SearchUtils {
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(in));) {
 				String strLine;
 
-				filePath = file.getParent() + "\\Split_Files";
-				log.debug("Directory ::" + filePath);
+				//filePath = file.getParent() + "\\Split_Files"; //working in windows
+				filePath = "Split_Files";
+				
 				File newFile = new File(filePath);
 				if (newFile.exists()) {
 					Files.walk(Paths.get(filePath)).filter(Files::isRegularFile).map(Path::toFile)
@@ -172,7 +173,7 @@ public class SearchUtils {
 				} else {
 					newFile.mkdir();
 				}
-				filePath = filePath + "\\File";
+				filePath = filePath + File.separator + "File";
 				for (int j = 1; j <= noOfFiles; j++) {
 
 					try (FileWriter outputStream = new FileWriter(filePath + j + ".csv"); // Destination File Location
@@ -197,6 +198,7 @@ public class SearchUtils {
 		} catch (Exception e) {
 			 log.error(e.getMessage(), e);
 		}
+		log.debug("Directory ::" + filePath);
 		return filePath;
 	}
 	
@@ -250,6 +252,37 @@ public class SearchUtils {
 
 		return false;
 
+	}
+	
+	public static boolean validateProduct(String file, String code, String prodNode)
+			throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		Document dom = db.parse(file);
+		Element docEle = dom.getDocumentElement();
+		NodeList nlProduct = docEle.getElementsByTagName(prodNode);
+		if (nlProduct != null && nlProduct.item(0) != null && nlProduct.item(0).getNodeType() == Node.ELEMENT_NODE) {
+			return ifPresent(nlProduct, code);
+		}
+		return Boolean.FALSE;
+
+	}
+	
+	private static boolean ifPresent(NodeList nlProduct, String code) {
+		Element elProduct = (Element) nlProduct.item(0);
+		NodeList itemList = elProduct.getElementsByTagName("item");
+		Boolean isPresent = Boolean.FALSE;
+		for (int i = 0; i < itemList.getLength(); i++) {
+			Node nNode = itemList.item(i);
+			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+				String value = elProduct.getElementsByTagName("value").item(i).getTextContent();
+				if (value.equals(code)) {
+					isPresent = Boolean.TRUE;
+					break;
+				}
+			}
+		}
+		return isPresent;
 	}
 
 }
